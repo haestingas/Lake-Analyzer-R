@@ -16,19 +16,15 @@ thermo.depth <- function(wtr, depths, Smin = 0.1, seasonal=TRUE){
   #We need water density, not temperature to do this
   rhoVar = water.density(wtr)
   
-  dRhoPerc = 0.15; #in percentage max for unique thermocline step
+  dRhoPerc = 0.15; #in percentage max for unique thermocline step, used later
   numDepths = length(depths);
-  drho_dz = vector(mode="double", length=numDepths-1);
-  
-  #Calculate the first derivative of density
-  for(i in 1:numDepths-1){
-	  drho_dz[i] = ( rhoVar[i+1]-rhoVar[i] )/( depths[i+1] - depths[i] );
-  }
-  
+  drho_dz = get.drho_dz(rhoVar, depths)
+
   #look for two distinct maximum slopes, lower one assumed to be seasonal
-  thermoInd = which.max(drho_dz)  #Find max slope
+  # actually right here we are just grabbing maximum slope
+  thermoInd = which.max(drho_dz)
   mDrhoZ = drho_dz[thermoInd]
-  thermoD = mean( depths[thermoInd:(thermoInd+1)] )
+  thermoD = depths[thermoInd]
   
   if(thermoInd > 1 && thermoInd < numDepths-1){  #if within range
 		Sdn = -(depths[thermoInd+1] - depths[thermoInd])/

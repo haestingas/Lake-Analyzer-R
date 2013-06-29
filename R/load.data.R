@@ -3,7 +3,7 @@
 load.bathy <- function(fPath){
   
   d = read.table(fPath, sep='\t', header=TRUE)
-  names(d) = tolower(d)
+  names(d) = tolower(names(d))
   
   dI = grep("depths", names(d))
   aI = grep("areas", names(d))

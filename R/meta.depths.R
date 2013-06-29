@@ -11,28 +11,18 @@ meta.depths = function(wtr, depths, slope=0.1){
   }
   
   thermoD=thermo.depth(wtr, depths, seasonal=TRUE)
-  
 	 #We need water density, not temperature to do this
 	rhoVar = water.density(wtr)
 
 	dRhoPerc = 0.15; #in percentage max for unique thermocline step
 	numDepths = length(depths)
-	drho_dz = vector(mode="double", length=numDepths-1)
-
-	#Calculate the first derivative of density
-	for(i in 1:numDepths-1){
-		drho_dz[i] = ( rhoVar[i+1]-rhoVar[i] )/( depths[i+1] - depths[i] )
-	}
+	drho_dz = get.drho_dz(rhoVar, depths)
 	
 	#initiate metalimnion bottom as last depth, this is returned if we can't
 	# find a bottom
 	metaBot_depth = depths[numDepths]
-  metaTop_depth = 0
-	Tdepth = vector(mode="double", length=numDepths-1)*NaN
-	
-	for(i in 1:numDepths-1){
-		Tdepth[i] = mean(depths[ i:(i+1) ]);
-	}
+	metaTop_depth = 0
+	Tdepth = depths
 	
 	tmp = sort.int(c(Tdepth, thermoD+1e-6), index.return = TRUE)
 	sortDepth = tmp$x
@@ -41,17 +31,17 @@ meta.depths = function(wtr, depths, slope=0.1){
 	drho_dz = drho_dz$y
 	
 	thermo_index = 1
-	thermoId = numDepths;
-	for(i in 1:numDepths){
+	thermoId = numDepths+1;
+	for(i in 1:(numDepths+1)){
 		if(thermoId == sortInd[i]){
 			thermo_index = i
 			break;
 		}
 	}
-	
-	for (i in thermo_index:numDepths){ # moving down from thermocline index
+
+	for (i in thermo_index:(numDepths+1)){ # moving down from thermocline index
 		if (drho_dz[i] < slope){ #top of metalimnion
-			metaBot_depth = sortDepth[i];
+			metaBot_depth = sortDepth[i]
 			break
 		}
 	}
@@ -61,7 +51,7 @@ meta.depths = function(wtr, depths, slope=0.1){
 			sortDepth[thermo_index:i],slope)
 		metaBot_depth = metaBot_depth$y
 	}
-	
+
 	if(is.na(metaBot_depth)){
 		metaBot_depth = depths[numDepths]
 	}
